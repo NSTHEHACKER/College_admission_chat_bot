@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>College Admission Chat Bot</title>
+</head>
+<body>
+    <div id="chatbox" style="padding: 10px;">
+        <div id="chatlogs" style="max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px;">
+            <!-- existing chat logs -->
+        </div>
+        <div id="user-input" style="margin-top: 10px;">
+            <input type="text" id="user-message" placeholder="Type your message..." style="width: 80%; padding: 5px;">
+            <button id="send-button" style="background-color: #4CAF50; color: white; padding: 5px;">Send</button>
+        </div>
+        <!-- <div id="model-response" style="margin-top: 10px;">
+            <strong>Model Response:</strong>
+            <div id="response-text"></div>
+        </div>
+    </div> -->
+
+    <script>
+        // Get the elements
+        const sendButton = document.getElementById('send-button');
+        const userMessageInput = document.getElementById('user-message');
+        const chatLogs = document.getElementById('chatlogs');
+        const responseText = document.getElementById('response-text');
+
+        // Function to append messages to the chat log
+        function appendMessage(content, className) {
+            const messageElement = document.createElement('div');
+            messageElement.className = className;  // Set the class name
+            messageElement.textContent = content;
+            chatLogs.appendChild(messageElement);
+            chatLogs.scrollTop = chatLogs.scrollHeight;  // Scroll to the bottom
+        }
+
+        // Add event listener to the send button
+        sendButton.addEventListener('click', () => {
+            const userMessage = userMessageInput.value.trim();
+
+            if (userMessage) {
+                // Append user message to the chat logs
+                appendMessage(`You: ${userMessage}`, 'user-message');
+
+                // Clear the input field
+                userMessageInput.value = '';
+
+                // Make an AJAX request to Flask app
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', '/ask');
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                xhr.onload = () => {
+                    if (xhr.status === 200) {
+                        const response = JSON.parse(xhr.responseText);
+                        // Append the model's response to the chat logs
+                        appendMessage(`Bot: ${response.model_response}`, 'bot-response');
+
+                        // Update the model response section
+                        responseText.textContent = response.model_response;
+                    }
+                };
+                xhr.send(JSON.stringify({ message: userMessage }));
+            }
+        });
+
+        // Allow sending messages by pressing the Enter key
+        userMessageInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                sendButton.click();
+            }
+        });
+    </script>
+</body>
+</html>
